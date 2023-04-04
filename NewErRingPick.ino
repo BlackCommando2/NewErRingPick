@@ -50,7 +50,7 @@ double rotationPulseOffset = 0.1, platformPulseOffset = 0.1, signOffsetRotation 
 long rotatePulse = 0, platformPulse = 0, resetPulse = 50000;
 long rLvl2Pulse = 0, pLvl1Pulse = 0, subLevel1 = 0, oneRingPulse = 0, rotationExtraPulse = 0, platformExtraPulse = 0;
 
-bool init_ = false, platformStart = false, rotationStart = false;
+bool init_ = false;
 bool rLs1 = false, rLs2 = false, pLs1 = false, pLs2 = false;
 bool allRings = true;
 bool pChange = false;
@@ -67,7 +67,7 @@ void setup()
     rMPID.setAggTunings(AggKpRotation, AggKiRotation, AggKdRotation);
     rMPID.setSoftTunings(SoftKpRotation, SoftKiRotation, SoftKdRotation);
 
-    pMPID.setThreshold(50);
+    pMPID.setThreshold(100);
     pMPID.setOutputLimits(-70, 70);
     pMPID.setAggTunings(AggKpPlatform, AggKiPlatform, AggKdPlatform);
     pMPID.setSoftTunings(SoftKpPlatform, SoftKiPlatform, SoftKdPlatform);
@@ -152,17 +152,17 @@ void loop()
             {
                 Serial.println("reached level 2");
                 // rMPID.setPulse(rotatePulse);
-                pInternalLvl == 1;
+                pInternalLvl == 2;
                 platformMotor.reset();
                 pMPID.setPulse(0);
             }
-            else if (!pLs1 && pInternalLvl == 1) // goto level 1
+            else if (!pLs1 && pInternalLvl == 2) // goto level 1
             {
                 Serial.println("goto level 1");
                 pMPID.setPulse(-resetPulse); // positive pulse for lvl 1 fix
-                pInternalLvl = 2;
+                pInternalLvl = 1;
             }
-            else if (pLs1 && pInternalLvl == 2) // reached level 1
+            else if (pLs1 && pInternalLvl == 1) // reached level 1
             {
                 Serial.println("reached level 2");
                 pLvl1Pulse = rotatePulse;
@@ -264,7 +264,7 @@ void platformSubLvl2(JSONVar msg)
 void setRotateExtraPulse(JSONVar msg)
 {
     rMPID.setThreshold(30);
-    rMPID.setOutputLimits(-20, 20);
+    rMPID.setOutputLimits(-25, 25);
     rMPID.setAggTunings(AggKpRotation, AggKiRotation, AggKdRotation);
     rMPID.setSoftTunings(SoftKpRotation, SoftKiRotation, SoftKdRotation);
 
@@ -290,8 +290,8 @@ void setPlatformExtraPulse(JSONVar msg) // move platform up for one ring on each
 
     if (temp == 1)
     {
-        // pMPID.setThreshold(50);
-        pMPID.setOutputLimits(-100, 100);
+        pMPID.setThreshold(50);
+        pMPID.setOutputLimits(-80, 80);
         // pMPID.setAggTunings(AggKpPlatform, AggKiPlatform, AggKdPlatform);
         // pMPID.setSoftTunings(SoftKpPlatform, SoftKiPlatform, SoftKdPlatform);
         platformLevel = 2;
