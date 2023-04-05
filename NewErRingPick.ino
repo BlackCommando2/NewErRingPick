@@ -30,7 +30,7 @@ JSONVar feedback;
 JSONVar datapick;
 Motor rotationMotor(22, 23);
 Motor platformMotor(33, 32);
-UniversalEncoder rotationEncoder(19, 18, -1);
+UniversalEncoder rotationEncoder(19, 18, 1);
 UniversalEncoder platformEncoder(25, 26, -1);
 positionalnew rMPID(&rotationMotor);
 positionalnew pMPID(&platformMotor);
@@ -114,7 +114,7 @@ void loop()
       if (rInternalLvl == -1) // initially goto level 1
       {
         Serial.println("goto level 1");
-        rMPID.setPulse(resetPulse); // negative pulse for lvl 1 fix
+        rMPID.setPulse( resetPulse); // postive pulse for lvl 1 fix
         rInternalLvl = 0;
       }
       else if (rLs1 && rInternalLvl == 0) // reached level 1
@@ -127,18 +127,18 @@ void loop()
       }
       else if (!rLs2 && rInternalLvl == 1) // goto level 2
       {
-        Serial.println("goto level 2  " +String(rInternalLvl));
+        Serial.println("goto level 2  " + String(rInternalLvl));
         rMPID.setPulse(-resetPulse);// positive pulse for lvl 2 fix
         rInternalLvl = 2;
       }
       else if (rLs2 && rInternalLvl == 2) // reached level 2
       {
-        Serial.println("reached level 2  " +String(rInternalLvl));
+        Serial.println("reached level 2  " + String(rInternalLvl));
         rLvl2Pulse = rotatePulse;
         rotationExtraPulse = rLvl2Pulse * rotationPulseOffset;
         Serial.println(rLvl2Pulse);
-        Serial.println(rLvl2Pulse-rLvl2Pulse*0.05);
-        rMPID.setPulse(rLvl2Pulse-rLvl2Pulse*0.05); // move the rotation slightly towards lvl 1 to free Limit Switch
+        Serial.println(rLvl2Pulse - rLvl2Pulse * 0.05);
+        rMPID.setPulse(rLvl2Pulse - rLvl2Pulse * 0.05); // move the rotation slightly towards lvl 1 to free Limit Switch
         rInternalLvl = 3;
       }
     }
@@ -170,8 +170,8 @@ void loop()
         pLvl1Pulse = platformPulse;
         subLevel1 = pLvl1Pulse * 0.8;
         platformExtraPulse = (pLvl1Pulse - subLevel1) * 0.05;
-        oneRingPulse = (pLvl1Pulse - subLevel1) * 0.5;
-        pMPID.setPulse(pLvl1Pulse - pLvl1Pulse * 0.05); // move the platform slightly towards lvl 2 to free Limit Switch
+        oneRingPulse = (pLvl1Pulse - subLevel1) * 0.4;
+        pMPID.setPulse(pLvl1Pulse - pLvl1Pulse * 0.08); // move the platform slightly towards lvl 2 to free Limit Switch
         pInternalLvl = 3;
         //Serial.println(String(pLvl1Pulse)+", SUB="+String(subLevel1)+", EXTRA="+String(platformExtraPulse)+", ONE="+String(oneRingPulse));
       }
@@ -265,7 +265,7 @@ void platformLvl1(JSONVar msg)
   platformSubLevel = 0;
   init_ = true;
 
-  pMPID.setPulse(pLvl1Pulse-pLvl1Pulse*0.05);//move platform to level 1
+  pMPID.setPulse(pLvl1Pulse - pLvl1Pulse * 0.05); //move platform to level 1
 }
 
 
@@ -304,7 +304,6 @@ void setPlatformExtraPulse(JSONVar msg) // move platform up for one ring on each
     // pMPID.setAggTunings(AggKpPlatform, AggKiPlatform, AggKdPlatform);
     // pMPID.setSoftTunings(SoftKpPlatform, SoftKiPlatform, SoftKdPlatform);
     platformLevel = 2;
-    platformSubLevel = platformSubLevel > 10 ? 10 : platformSubLevel;  
     Serial.println("platformSubLvl2");
     init_ = true;
 
@@ -321,6 +320,7 @@ void setPlatformExtraPulse(JSONVar msg) // move platform up for one ring on each
     else if (!allRings)
     {
       platformSubLevel++;
+      platformSubLevel = platformSubLevel > 11 ? 11 : platformSubLevel;
       //      pMPID.setPulse(signOffsetPlatform * (subLevel1 - platformSubLevel * oneRingPulse));
 
       pMPID.setPulse((subLevel1 - platformSubLevel * oneRingPulse));//move to a sublevel for each ring after 10th ring
@@ -347,7 +347,7 @@ void setPlatformExtraPulse(JSONVar msg) // move platform up for one ring on each
 
     // Serial.println(JSON.stringify(msg));
     //Serial.println("lvl1: " + (String)pLvl1Pulse+"platformSubLevel: "+String(platformSubLevel) + " Off: " + (String)setOffset + " platEP: " + String(platformExtraPulse));
-    Serial.println("platformSubLevel: "+String(platformSubLevel) + " Off: " + (String)setOffset + " platEP: " + String(platformExtraPulse));
+    Serial.println("platformSubLevel: " + String(platformSubLevel) + " Off: " + (String)setOffset + " platEP: " + String(platformExtraPulse));
     datapick["pExtra"] = platformExtraPulse;
     datapick["setOffset"] = setOffset;
     datapick["type"] = "plat";
