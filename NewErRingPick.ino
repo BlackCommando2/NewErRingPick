@@ -183,12 +183,12 @@ void loop()
     {
       if (rLs2)
       {
-        rMPID.setPulse(rotatePulse - rLvl2Pulse * 0.05); // after this limit switch should be free
+        rMPID.setPulse(rotatePulse - rLvl2Pulse * 0.01); // after this limit switch should be free
       }
 
       else if (rLs1)
       {
-        rMPID.setPulse(rotatePulse + rLvl2Pulse * 0.05); // after this limit switch should be free
+        rMPID.setPulse(rotatePulse + rLvl2Pulse * 0.02); // after this limit switch should be free
       }
     }
 
@@ -196,12 +196,12 @@ void loop()
     {
       if (pLs2)
       {
-        pMPID.setPulse(platformPulse + pLvl1Pulse * 0.05); // after this limit switch should be free
+        pMPID.setPulse(platformPulse + pLvl1Pulse * 0.02); // after this limit switch should be free
       }
 
       else if (pLs1)
       {
-        pMPID.setPulse(platformPulse - pLvl1Pulse * 0.05); // after this limit switch should be free
+        pMPID.setPulse(platformPulse - pLvl1Pulse * 0.02); // after this limit switch should be free
       }
     }
   }
