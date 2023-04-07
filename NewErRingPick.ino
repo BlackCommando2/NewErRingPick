@@ -170,7 +170,7 @@ void loop()
         pLvl1Pulse = platformPulse;
         subLevel1 = pLvl1Pulse * 0.8;
         platformExtraPulse = (pLvl1Pulse - subLevel1) * 0.05;
-        oneRingPulse = (pLvl1Pulse - subLevel1) * 0.4;
+        oneRingPulse = subLevel1/9.5;
         pMPID.setPulse(pLvl1Pulse - pLvl1Pulse * 0.08); // move the platform slightly towards lvl 2 to free Limit Switch
         pInternalLvl = 3;
         //Serial.println(String(pLvl1Pulse)+", SUB="+String(subLevel1)+", EXTRA="+String(platformExtraPulse)+", ONE="+String(oneRingPulse));
