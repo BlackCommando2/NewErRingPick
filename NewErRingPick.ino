@@ -49,7 +49,7 @@ double rotationPulseOffset = 0.048, platformPulseOffset = 0.1, signOffsetRotatio
 
 long rotatePulse = 0, platformPulse = 0, resetPulse = 50000;
 long rLvl2Pulse = 0, pLvl1Pulse = 0, subLevel1 = 0, oneRingPulse = 0, rotationExtraPulse = 0, platformExtraPulse = 0;
-
+int setOffset;
 bool init_ = false;
 bool rLs1 = false, rLs2 = false, pLs1 = false, pLs2 = false;
 bool allRings = true;
@@ -95,7 +95,7 @@ void loop()
 
   rotatePulse = rotationMotor.getReadings();
   platformPulse = platformMotor.getReadings();
-  //Serial.println("ROTATION=" + String(rotatePulse) + ", PLATFORM= " + String(platformPulse));
+  Serial.println("ROTATION=" + String(rotatePulse) + ", PLATFORM= " + String(platformPulse)+", platform offset "+String(setOffset));
   pLs1 = !(bool)digitalRead(platformLs1);
   pLs2 = !(bool)digitalRead(platformLs2);
   rLs1 = !(bool)digitalRead(rotateLs1);
@@ -113,6 +113,7 @@ void loop()
     {
       if (rInternalLvl == -1) // initially goto level 1
       {
+        rMPID.setOutputLimits(-20, 20);
         Serial.println("goto level 1");
         rMPID.setPulse( resetPulse); // postive pulse for lvl 1 fix
         rInternalLvl = 0;
@@ -127,6 +128,7 @@ void loop()
       }
       else if (!rLs2 && rInternalLvl == 1) // goto level 2
       {
+        rMPID.setOutputLimits(-35, 35);
         Serial.println("goto level 2  " + String(rInternalLvl));
         rMPID.setPulse(-resetPulse);// positive pulse for lvl 2 fix
         rInternalLvl = 2;
@@ -189,7 +191,7 @@ void loop()
 
       else if (rLs1)
       {
-        rMPID.setPulse(rotatePulse + rLvl2Pulse * 0.05); // after this limit switch should be free
+        rMPID.setPulse(rotatePulse + rLvl2Pulse * 0.051); // after this limit switch should be free
       }
     }
 
@@ -235,7 +237,7 @@ void rotationLvl2(JSONVar msg)
   Serial.println("rotationLvl2");
 
   rMPID.setThreshold(200);
-  rMPID.setOutputLimits(-50, 50);
+  rMPID.setOutputLimits(-60, 60);
   rMPID.setAggTunings(AggKpRotation, AggKiRotation, AggKdRotation);
   rMPID.setSoftTunings(SoftKpRotation, SoftKiRotation, SoftKdRotation);
 
@@ -279,7 +281,7 @@ void setRotateExtraPulse(JSONVar msg)
 
   int extraOffset = (int)msg["offset"]; // for rotation towards lvl 1(offset = -1) & towards lvl 2(offset = 1) // set this values on remote reciever
 
-  int setOffset = rotationMotor.getReadings() + (extraOffset * rotationExtraPulse);
+  setOffset = rotationMotor.getReadings() + (extraOffset * rotationExtraPulse);
 
   // Serial.println(JSON.stringify(msg));
   // Serial.println("setOffset: " + String(setOffset) + "RotaEP: " + String(rotationExtraPulse));
@@ -297,7 +299,13 @@ void setPlatformExtraPulse(JSONVar msg) // move platform up for one ring on each
 {
   int temp = msg["side"];
   // int extraOffset = (int)msg["offset"];
-
+   if(msg["spid"]=="set")
+    { 
+        AggKpPlatform = 1.8, AggKiPlatform = 0.0, AggKdPlatform = 0;
+        SoftKpPlatform = 1.8, SoftKiPlatform = 0, SoftKdPlatform = 0;
+        rMPID.setAggTunings(AggKpRotation, AggKiRotation, AggKdRotation);
+        rMPID.setSoftTunings(SoftKpRotation, SoftKiRotation, SoftKdRotation);
+    }
   if (temp == 1)
   {
     pMPID.setThreshold(50);
@@ -307,14 +315,14 @@ void setPlatformExtraPulse(JSONVar msg) // move platform up for one ring on each
     platformLevel = 2;
     Serial.println("platformSubLvl2");
     init_ = true;
-
+ 
     if (allRings)
     {
       //      pMPID.setPulse(signOffsetPlatform * subLevel1);
 
       pMPID.setPulse(subLevel1);//move to a sublevel where the 10th ring is loaded to pass
 
-      Serial.println("lvl1: " + (String)pLvl1Pulse + " UpOffset1: " + (String) int((int)subLevel1) + " Sublvl: " + (String)subLevel1);
+      //Serial.println("lvl1: " + (String)pLvl1Pulse + " UpOffset1: " + (String) int((int)subLevel1) + " Sublvl: " + (String)subLevel1);
 
       allRings = false;
     }
@@ -323,9 +331,9 @@ void setPlatformExtraPulse(JSONVar msg) // move platform up for one ring on each
       platformSubLevel++;
       platformSubLevel = platformSubLevel > 11 ? 11 : platformSubLevel;
       //      pMPID.setPulse(signOffsetPlatform * (subLevel1 - platformSubLevel * oneRingPulse));
-
+      setOffset = (subLevel1 - platformSubLevel * oneRingPulse);
       pMPID.setPulse((subLevel1 - platformSubLevel * oneRingPulse));//move to a sublevel for each ring after 10th ring
-      pMPID.setPulse(platformMotor.getReadings() - oneRingPulse);
+      //pMPID.setPulse(platformMotor.getReadings() - oneRingPulse);
       Serial.println("lvl1: " + (String)pLvl1Pulse + " UpOffset2: " + (String) int((subLevel1 - platformSubLevel * (int)oneRingPulse)) + " Sublvl: " + (String)subLevel1);
     }
     datapick["platform"] = "LEVEL 2";
@@ -344,16 +352,16 @@ void setPlatformExtraPulse(JSONVar msg) // move platform up for one ring on each
 
     //    int setOffset = platformMotor.getReadings() + (extraOffset * platformExtraPulse);
 
-    int setOffset = (platformMotor.getReadings() + oneRingPulse); // offset to move platform down OneRing
+    //setOffset = (platformMotor.getReadings() + oneRingPulse); // offset to move platform down OneRing
 
     // Serial.println(JSON.stringify(msg));
     //Serial.println("lvl1: " + (String)pLvl1Pulse+"platformSubLevel: "+String(platformSubLevel) + " Off: " + (String)setOffset + " platEP: " + String(platformExtraPulse));
-    Serial.println("platformSubLevel: " + String(platformSubLevel) + " Off: " + (String)setOffset + " platEP: " + String(platformExtraPulse));
+    //Serial.println("platformSubLevel: " + String(platformSubLevel) + " Off: " + (String)setOffset + " platEP: " + String(platformExtraPulse));
     datapick["pExtra"] = platformExtraPulse;
     datapick["setOffset"] = setOffset;
     datapick["type"] = "plat";
     dataesp.send(datapick);
-
+    setOffset=(subLevel1 + platformSubLevel * oneRingPulse);
     pMPID.setPulse(setOffset);//move platform down OneRing
 
     init_ = true;
