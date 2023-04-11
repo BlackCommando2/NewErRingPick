@@ -354,7 +354,7 @@ void setPID(JSONVar msg)
 //        rMPID.setSoftTunings(SoftKpRotation, SoftKiRotation, SoftKdRotation);
 //      }
 //      platformSubLevel++;
-//      platformSubLevel = platformSubLevel > 11 ? 11 : platformSubLevel;
+//      platformSubLevel = platformSubLevel > 15 ? 15 : platformSubLevel;
 //      //      pMPID.setPulse(signOffsetPlatform * (subLevel1 - platformSubLevel * oneRingPulse));
 //      setOffset = (subLevel1 - platformSubLevel * oneRingPulse);
 //      pMPID.setPulse((subLevel1 - platformSubLevel * oneRingPulse));//move to a sublevel for each ring after 10th ring
@@ -413,7 +413,6 @@ void setPlatformExtraPulse(JSONVar msg) // move platform up for one ring on each
     if (allRings)
     {
       platformSubLevel++;
-      platformSubLevel = platformSubLevel > 11 ? 11 : platformSubLevel;
       if (setPid == 3)
       {
         Serial.println("SET PID FOR POLE 3");
