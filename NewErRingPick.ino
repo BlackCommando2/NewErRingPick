@@ -28,6 +28,7 @@ Peer remote;
 Peer dataesp;
 JSONVar feedback;
 JSONVar datapick;
+JSONVar setdata;
 Motor rotationMotor(22, 23);
 Motor platformMotor(33, 32);
 UniversalEncoder rotationEncoder(19, 18, 1);
@@ -35,8 +36,8 @@ UniversalEncoder platformEncoder(25, 26, -1);
 positionalnew rMPID(&rotationMotor);
 positionalnew pMPID(&platformMotor);
 
-double AggKpRotation = 2 , AggKiRotation = 0.0, AggKdRotation = 0;
-double SoftKpRotation = 0.25, SoftKiRotation = 0.0, SoftKdRotation = 0;
+double AggKpRotation = 1.55 , AggKiRotation = 0.0, AggKdRotation = 0;
+double SoftKpRotation = 0.4, SoftKiRotation = 0.0, SoftKdRotation = 0;
 double AggKpPlatform = 1.5, AggKiPlatform = 0.0, AggKdPlatform = 0;
 double SoftKpPlatform = 0.5, SoftKiPlatform = 0, SoftKdPlatform = 0;
 
@@ -45,15 +46,15 @@ int rotateLs1 = 15, rotateLs2 = 16, platformLs1 = 14, platformLs2 = 17;
 
 int rotateLevel = 0, platformLevel = 0, platformSubLevel = 0;
 int rInternalLvl = -1, pInternalLvl = -1;
-double rotationPulseOffset = 0.05, platformPulseOffset = 0.1, signOffsetRotation = 0, signOffsetPlatform = 0;
+double rotationPulseOffset = 0.045, platformPulseOffset = 0.1, signOffsetRotation = 0, signOffsetPlatform = 0;
 
 long rotatePulse = 0, platformPulse = 0, resetPulse = 50000;
 long rLvl2Pulse = 0, pLvl1Pulse = 0, subLevel1 = 0, oneRingPulse = 0, rotationExtraPulse = 0, platformExtraPulse = 0;
-int setOffset, setPid;
+int setOffset, setPid, moveMsg;
 bool init_ = false;
 bool rLs1 = false, rLs2 = false, pLs1 = false, pLs2 = false;
 bool allRings = true;
-bool pChange = false;
+bool pOpen = false;
 void setup()
 {
   Serial.begin(115200);
@@ -87,11 +88,12 @@ void setup()
   remote.setOnRecieve(setRotateExtraPulse, "exRo");
   remote.setOnRecieve(setPlatformExtraPulse, "exPl");
   remote.setOnRecieve(resetAll, "Erst");
-  remote.setOnRecieve(pneumaticClose, "pClP");
-  remote.setOnRecieve(pneumaticOpen, "pOpP");
+  remote.setOnRecieve(pneumaticMove, "pMove");
   remote.setOnRecieve(setPID, "sPID");
   remote.setOnRecieve(resetPID, "resP");
-} 
+  setdata["type"] = "setup";
+  remote.send(setdata);
+}
 void loop()
 {
 
@@ -130,7 +132,7 @@ void loop()
       }
       else if (!rLs2 && rInternalLvl == 1) // goto level 2
       {
-        rMPID.setOutputLimits(-35, 35);
+        rMPID.setOutputLimits(-25, 25);
         //Serial.println("goto level 2  " + String(rInternalLvl));
         rMPID.setPulse(-resetPulse);// positive pulse for lvl 2 fix
         rInternalLvl = 2;
@@ -172,10 +174,10 @@ void loop()
       {
         //Serial.println("reached level 2");
         pLvl1Pulse = platformPulse;
-//        subLevel1 = pLvl1Pulse * 0.8;
-//        platformExtraPulse = (pLvl1Pulse - subLevel1) * 0.05;
-//        oneRingPulse = subLevel1 / 9.5;
-        oneRingPulse = pLvl1Pulse/ 11.5;
+        //        subLevel1 = pLvl1Pulse * 0.8;
+        //        platformExtraPulse = (pLvl1Pulse - subLevel1) * 0.05;
+        //        oneRingPulse = subLevel1 / 9.5;
+        oneRingPulse = pLvl1Pulse / 11.5;
         pMPID.setPulse(pLvl1Pulse - pLvl1Pulse * 0.0225); // move the platform slightly towards lvl 2 to free Limit Switch
         pInternalLvl = 3;
         //Serial.println(String(pLvl1Pulse)+", SUB="+String(subLevel1)+", EXTRA="+String(platformExtraPulse)+", ONE="+String(oneRingPulse));
@@ -189,7 +191,9 @@ void loop()
 
       if (rLs2)
       {
-        rMPID.setPulse(rotatePulse - rLvl2Pulse * 0.03); // after this limit switch should be free
+        // motorBack();
+        //       rMPID.setPulse(rotatePulse - rLvl2Pulse * 0.03); // after this limit switch should be free
+
       }
 
       else if (rLs1)
@@ -222,8 +226,8 @@ void rotationLvl1(JSONVar msg)
   //Serial.println("rotationLvl1");
   rMPID.setThreshold(200);
   rMPID.setOutputLimits(-25, 25);
-//  rMPID.setAggTunings(AggKpRotation, AggKiRotation, AggKdRotation);
-//  rMPID.setSoftTunings(SoftKpRotation, SoftKiRotation, SoftKdRotation);
+  //  rMPID.setAggTunings(AggKpRotation, AggKiRotation, AggKdRotation);
+  //  rMPID.setSoftTunings(SoftKpRotation, SoftKiRotation, SoftKdRotation);
 
   rotateLevel = 1;
   init_ = true;
@@ -232,7 +236,7 @@ void rotationLvl1(JSONVar msg)
   datapick["type"] = "rotation";
   dataesp.send(datapick);
 
-  rMPID.setPulse(-10); // move to level 1
+  rMPID.setPulse(-20); // move to level 1
 }
 
 void rotationLvl2(JSONVar msg)
@@ -240,9 +244,9 @@ void rotationLvl2(JSONVar msg)
   //Serial.println("rotationLvl2");
 
   rMPID.setThreshold(200);
-  rMPID.setOutputLimits(-60, 60);
-//  rMPID.setAggTunings(AggKpRotation, AggKiRotation, AggKdRotation);
-//  rMPID.setSoftTunings(SoftKpRotation, SoftKiRotation, SoftKdRotation);
+  rMPID.setOutputLimits(-70, 70);
+  //  rMPID.setAggTunings(AggKpRotation, AggKiRotation, AggKdRotation);
+  //  rMPID.setSoftTunings(SoftKpRotation, SoftKiRotation, SoftKdRotation);
 
   datapick["rotate"] = "LEVEL 2";
   datapick["type"] = "rotation";
@@ -278,12 +282,15 @@ void platformLvl1(JSONVar msg)
 void setRotateExtraPulse(JSONVar msg)
 {
   rMPID.setThreshold(30);
- 
-//  rMPID.setAggTunings(AggKpRotation, AggKiRotation, AggKdRotation);
-//  rMPID.setSoftTunings(SoftKpRotation, SoftKiRotation, SoftKdRotation);
+  AggKpPlatform = 0.8;
+  SoftKpPlatform = 0.15;
+  rMPID.setAggTunings(AggKpRotation, AggKiRotation, AggKdRotation);
+  rMPID.setSoftTunings(SoftKpRotation, SoftKiRotation, SoftKdRotation);
+  //  rMPID.setAggTunings(AggKpRotation, AggKiRotation, AggKdRotation);
+  //  rMPID.setSoftTunings(SoftKpRotation, SoftKiRotation, SoftKdRotation);
 
   int extraOffset = (int)msg["offset"]; // for rotation towards lvl 1(offset = -1) & towards lvl 2(offset = 1) // set this values on remote reciever
-  rMPID.setOutputLimits(-25, 25);
+  rMPID.setOutputLimits(-22, 22);
   setOffset = rotationMotor.getReadings() + (extraOffset * rotationExtraPulse);
 
   // Serial.println(JSON.stringify(msg));
@@ -415,8 +422,8 @@ void setPlatformExtraPulse(JSONVar msg) // move platform up for one ring on each
         rMPID.setAggTunings(AggKpRotation, AggKiRotation, AggKdRotation);
         rMPID.setSoftTunings(SoftKpRotation, SoftKiRotation, SoftKdRotation);
       }
-      pMPID.setPulse(pLvl1Pulse -platformSubLevel*oneRingPulse);
-      Serial.println("lvl1: " + (String)pLvl1Pulse + " UpOffset: " + (String) int(pLvl1Pulse -platformSubLevel*oneRingPulse)+"One ring= "+String(oneRingPulse));
+      pMPID.setPulse(pLvl1Pulse - platformSubLevel * oneRingPulse);
+      Serial.println("lvl1: " + (String)pLvl1Pulse + " UpOffset: " + (String) int(pLvl1Pulse - platformSubLevel * oneRingPulse) + "One ring= " + String(oneRingPulse));
     }
   }
   else if (temp == -1)
@@ -431,14 +438,14 @@ void setPlatformExtraPulse(JSONVar msg) // move platform up for one ring on each
     }
     platformSubLevel--;
     platformSubLevel = platformSubLevel < 1 ? 1 : platformSubLevel;
-    pMPID.setPulse(pLvl1Pulse -platformSubLevel*oneRingPulse);//move platform down OneRing
-    Serial.println("lvl1: " + (String)pLvl1Pulse + " DownOffset: " + (String) int(pLvl1Pulse -platformSubLevel*oneRingPulse)+"One ring= "+String(oneRingPulse));
+    pMPID.setPulse(pLvl1Pulse - platformSubLevel * oneRingPulse); //move platform down OneRing
+    Serial.println("lvl1: " + (String)pLvl1Pulse + " DownOffset: " + (String) int(pLvl1Pulse - platformSubLevel * oneRingPulse) + "One ring= " + String(oneRingPulse));
     init_ = true;
   }
 }
 void resetPID(JSONVar msg)
 {
-  setPid=0;
+  setPid = 0;
 }
 void resetAll(JSONVar msg)
 {
@@ -456,14 +463,39 @@ void resetAll(JSONVar msg)
   datapick["type"] = "reset";
   dataesp.send(datapick);
 }
-
-void pneumaticClose(JSONVar msg)
+void pneumaticMove(JSONVar msg)
 {
-  //Serial.println("Pneumatic Close");
-  digitalWrite(13, HIGH);
+  if (pOpen)
+  {
+    digitalWrite(13, HIGH);
+    Serial.println("close");
+    pOpen = false;
+  }
+  else if (!pOpen)
+  {
+    digitalWrite(13, LOW);
+    Serial.println("open");
+    pOpen = true;
+  }
+  //  moveMsg = (int)msg["move"];
+  //  if (moveMsg == 1)
+  //  {
+  //    digitalWrite(13, LOW);
+  //    Serial.println("open");
+  //  }
+  //  else if (moveMsg == 0)
+  //  {
+  //    digitalWrite(13, HIGH);
+  //    Serial.println("close");
+  //  }
 }
-void pneumaticOpen(JSONVar msg)
-{
-  //Serial.println("Pneumatic Open");
-  digitalWrite(13, LOW);
-}
+//void pneumaticClose(JSONVar msg)
+//{
+//  //Serial.println("Pneumatic Close");
+//  digitalWrite(13, HIGH);
+//}
+//void pneumaticOpen(JSONVar msg)
+//{
+//  //Serial.println("Pneumatic Open");
+//  digitalWrite(13, LOW);
+//}
