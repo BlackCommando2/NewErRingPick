@@ -99,7 +99,7 @@ void loop()
 
   rotatePulse = rotationMotor.getReadings();
   platformPulse = platformMotor.getReadings();
-//  Serial.println("ROTATION=" + String(rotatePulse) + ", PLATFORM= " + String(platformPulse));
+ Serial.println("ROTATION=" + String(rotatePulse) + ", PLATFORM= " + String(platformPulse));
   pLs1 = !(bool)digitalRead(platformLs1);
   pLs2 = !(bool)digitalRead(platformLs2);
   rLs1 = !(bool)digitalRead(rotateLs1);
@@ -307,7 +307,7 @@ void setRotateExtraPulse(JSONVar msg)
 void setPID(JSONVar msg)
 {
   setPid = msg["spid"];
-  //Serial.println(JSON.stringify(msg));
+  Serial.println(JSON.stringify(msg));
 }
 //void setPlatformExtraPulse(JSONVar msg) // move platform up for one ring on each up press and move platform down for one ring on each down press
 //{
@@ -415,21 +415,21 @@ void setPlatformExtraPulse(JSONVar msg) // move platform up for one ring on each
       platformSubLevel++;
       if (setPid == 3)
       {
-       // Serial.println("SET PID FOR POLE 3");
+        Serial.println("SET PID FOR POLE 3");
         AggKpPlatform = 5;
         SoftKpPlatform = 5;
         rMPID.setAggTunings(AggKpRotation, AggKiRotation, AggKdRotation);
         rMPID.setSoftTunings(SoftKpRotation, SoftKiRotation, SoftKdRotation);
       }
       pMPID.setPulse(pLvl1Pulse - platformSubLevel * oneRingPulse);
-      //Serial.println("lvl1: " + (String)pLvl1Pulse + " UpOffset: " + (String) int(pLvl1Pulse - platformSubLevel * oneRingPulse) + "One ring= " + String(oneRingPulse));
+      Serial.println("lvl1: " + (String)pLvl1Pulse + " UpOffset: " + (String) int(pLvl1Pulse - platformSubLevel * oneRingPulse) + "One ring= " + String(oneRingPulse));
     }
   }
   else if (temp == -1)
   {
     if (setPid == 3)
     {
-//      Serial.println("SET PID FOR POLE 3");
+      Serial.println("SET PID FOR POLE 3");
       AggKpPlatform = 5;
       SoftKpPlatform = 5;
       rMPID.setAggTunings(AggKpRotation, AggKiRotation, AggKdRotation);
@@ -438,7 +438,7 @@ void setPlatformExtraPulse(JSONVar msg) // move platform up for one ring on each
     platformSubLevel--;
     platformSubLevel = platformSubLevel < 1 ? 1 : platformSubLevel;
     pMPID.setPulse(pLvl1Pulse - platformSubLevel * oneRingPulse); //move platform down OneRing
-//    Serial.println("lvl1: " + (String)pLvl1Pulse + " DownOffset: " + (String) int(pLvl1Pulse - platformSubLevel * oneRingPulse) + "One ring= " + String(oneRingPulse));
+    Serial.println("lvl1: " + (String)pLvl1Pulse + " DownOffset: " + (String) int(pLvl1Pulse - platformSubLevel * oneRingPulse) + "One ring= " + String(oneRingPulse));
     init_ = true;
   }
 }
@@ -474,10 +474,10 @@ void pneumaticMove(JSONVar msg)
 //  {
 //    digitalWrite(13, LOW);
     start=millis();
-    while(millis()-start<1000)
+    while(millis()-start<500)
     {
       digitalWrite(13, HIGH);
-//      Serial.println("close");
+      Serial.println("close");
     }
     digitalWrite(13,LOW);
     
