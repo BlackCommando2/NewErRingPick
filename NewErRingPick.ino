@@ -1,5 +1,5 @@
 /*
-  rotation levels
+  rotation levels (16)
                 |
                 |
                 |
@@ -7,18 +7,18 @@
                 |
                 |
                 level 2 (rotateLs2)(resetLevel) (positive pulse)
-  ------- level 1 (rotateLs1)(negative pulse)
+  (15)------- level 1 (rotateLs1)(negative pulse)
 
 
   Platform Levels
 
-  -------------- level 2 (platformLs2) (negative pulse)
+  --------------(17) level 2 (platformLs2) (negative pulse)
 
     ---------   (Sub level for each ring in total 10 rings)
     ---------
     ---------
 
-  -------------- level 1 (platformLs1)(resetLevel) (positive pulse)
+  -------------- (14)level 1 (platformLs1)(resetLevel) (positive pulse)
 */
 #include <EspNow.h>
 #include <Motor.h>
