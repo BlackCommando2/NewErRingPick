@@ -410,9 +410,10 @@ void setPlatformExtraPulse(JSONVar msg) // move platform up for one ring on each
     {
       platformSubLevel--;
 
-      platformSubLevel = platformSubLevel < 1 ? 1 : platformSubLevel;
+      //platformSubLevel = platformSubLevel < 1 ? 1 : platformSubLevel;
+      platformSubLevel = platformSubLevel < 0 ? 0 : platformSubLevel;
 
-      allRings = platformSubLevel < 1 ? !allRings : allRings;
+//      allRings = platformSubLevel < 0? !allRings : allRings;
 
       // Serial.println(JSON.stringify(msg));
       Serial.println(" Off: " + (String)setOffset + ", PLATFORM= " + String(platformPulse) + "lvl1: " + (String)pLvl1Pulse + "platformSubLevel: " + String(platformSubLevel));
@@ -427,6 +428,7 @@ void setPlatformExtraPulse(JSONVar msg) // move platform up for one ring on each
       pMPID.setPulse(setOffset);//move platform down OneRing
       Serial.println("platformSubLevel: " + String(platformSubLevel) + " Off: " + ((String)setOffset) );
       init_ = true;
+      
     }
 
   }
