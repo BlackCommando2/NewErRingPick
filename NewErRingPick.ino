@@ -297,9 +297,9 @@ void setPlatformExtraPulse(JSONVar msg) // move platform up for one ring on each
       }
 //      setLevel = subLevel1 - (2 * oneRingPulse) - 125;
 //      setLevel = subLevel1 - ( oneRingPulse)-175;
-        setLevel=subLevel1-(0.5* oneRingPulse);
+        setLevel=subLevel1-(0.8* oneRingPulse);  //0.5
       pMPID.setPulse(setLevel);
-      Serial.println("lvl1: " + (String)pLvl1Pulse + " SetLevel: " + (String)(setLevel) + ", PLATFORM= " + String(platformPulse));
+      Serial.println("lvl1: " + (String)pLvl1Pulse + " SetLevel: " + (String)(setLevel) + ", sublevel= " + String(subLevel1));
 
       allRings = false;
       platformSubLevel = 0;
