@@ -200,16 +200,16 @@ void loop()
   }
   rMPID.compute();
   pMPID.compute();
-  if (pMove)
-  {
-    start = millis();
-    while (millis() - start < 1000)
-    {
-      digitalWrite(13, HIGH);
-    }
-    digitalWrite(13, LOW);
-    pMove = false;
-  }
+  //  if (pMove)
+  //  {
+  //    start = millis();
+  //    while (millis() - start < 1000)
+  //    {
+  //      digitalWrite(13, HIGH);
+  //    }
+  //    digitalWrite(13, LOW);
+  //    pMove = false;
+  //  }
 }
 
 void rotationLvl1(JSONVar msg)
@@ -307,7 +307,7 @@ void setPlatformExtraPulse(JSONVar msg) // move platform up for one ring on each
       }
       //      setLevel = subLevel1 - (2 * oneRingPulse) - 125;
       //      setLevel = subLevel1 - ( oneRingPulse)-175;
-      setLevel = subLevel1 - (0.5 * oneRingPulse); 
+      setLevel = subLevel1 - (0.5 * oneRingPulse); //0.8
       pMPID.setPulse(setLevel);
       Serial.println("lvl1: " + (String)pLvl1Pulse + " SetLevel: " + (String)(setLevel) + ", PLATFORM= " + String(platformPulse));
 
@@ -389,6 +389,11 @@ void resetAll(JSONVar msg)
 }
 void pneumaticMove(JSONVar msg)
 {
-  pMove = true;
-
+//  pMove = true;
+  start = millis();
+  while (millis() - start < 1000)
+  {
+    digitalWrite(13, HIGH);
+  }
+  digitalWrite(13, LOW);
 }
