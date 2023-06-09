@@ -224,7 +224,7 @@ void rotationLvl1(JSONVar msg)
   datapick["rotate"] = "LEVEL 1";
   datapick["type"] = "rotation";
   //  dataesp.send(datapick);
-  rMPID.setPulse(-20); // move to level 1
+  rMPID.setPulse(0); // move to level 1  //-20
 }
 
 void rotationLvl2(JSONVar msg)
@@ -245,7 +245,7 @@ void rotationLvl2(JSONVar msg)
 void platformLvl1(JSONVar msg)
 {
   pMPID.setThreshold(100);
-  pMPID.setOutputLimits(-100, 100);
+  pMPID.setOutputLimits(-130, 130);
 
   datapick["platform"] = "LEVEL 1";
   datapick["type"] = "plat";
