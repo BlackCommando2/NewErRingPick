@@ -230,7 +230,7 @@ void rotationLvl1(JSONVar msg)
 void rotationLvl2(JSONVar msg)
 {
   rMPID.setThreshold(200);
-  rMPID.setOutputLimits(-57, 57);
+  rMPID.setOutputLimits(-62,62);
   datapick["rotate"] = "LEVEL 2";
   datapick["type"] = "rotation";
   //  dataesp.send(datapick);
@@ -307,7 +307,7 @@ void setPlatformExtraPulse(JSONVar msg) // move platform up for one ring on each
       }
       //      setLevel = subLevel1 - (2 * oneRingPulse) - 125;
       //      setLevel = subLevel1 - ( oneRingPulse)-175;
-      setLevel = subLevel1 - (0.5 * oneRingPulse); //0.8
+      setLevel = subLevel1 - (0.4 * oneRingPulse); //0.8
       pMPID.setPulse(setLevel);
       Serial.println("lvl1: " + (String)pLvl1Pulse + " SetLevel: " + (String)(setLevel));
 
@@ -375,7 +375,7 @@ void resetPID(JSONVar msg)
 }
 void resetAll(JSONVar msg)
 {
-  init_ = false;
+//  init_ = false;
   allRings = true;
   rInternalLvl = -1;
   rotateLevel = 0;
