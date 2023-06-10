@@ -128,7 +128,7 @@ void loop()
       }
       else if (!rLs2 && rInternalLvl == 1) // goto level 2
       {
-        rMPID.setOutputLimits(-25, 25);
+        rMPID.setOutputLimits(-30, 30);
         rMPID.setPulse(-resetPulse);// positive pulse for lvl 2 fix
         rInternalLvl = 2;
       }
@@ -189,7 +189,7 @@ void loop()
     {
       if (pLs2)
       {
-        pMPID.setPulse(platformPulse + pLvl1Pulse * 0.015); // after this limit switch should be free
+        pMPID.setPulse(platformPulse + pLvl1Pulse * 0.019); // after this limit switch should be free
       }
 
       else if (pLs1)
@@ -238,7 +238,7 @@ void rotationLvl2(JSONVar msg)
   rotateLevel = 2;
   init_ = true;
 
-  rMPID.setPulse(rLvl2Pulse); // rotate to level 2
+  rMPID.setPulse(rLvl2Pulse-30); // rotate to level 2
 
 }
 
@@ -309,7 +309,7 @@ void setPlatformExtraPulse(JSONVar msg) // move platform up for one ring on each
       //      setLevel = subLevel1 - ( oneRingPulse)-175;
       setLevel = subLevel1 - (0.5 * oneRingPulse); //0.8
       pMPID.setPulse(setLevel);
-      Serial.println("lvl1: " + (String)pLvl1Pulse + " SetLevel: " + (String)(setLevel) + ", PLATFORM= " + String(platformPulse));
+      Serial.println("lvl1: " + (String)pLvl1Pulse + " SetLevel: " + (String)(setLevel));
 
       allRings = false;
       platformSubLevel = 0;
@@ -330,7 +330,7 @@ void setPlatformExtraPulse(JSONVar msg) // move platform up for one ring on each
       setOffset = (setLevel - platformSubLevel * oneRingPulse);
       pMPID.setPulse(setOffset);//move to a sublevel for each ring after 10th ring
 
-      Serial.println("lvl1: " + (String)pLvl1Pulse + " UpOffset2: " + (String) int(setOffset) + ", PLATFORM= " + String(platformPulse) + " Sublvl: " + (String)subLevel1);
+      Serial.println("lvl1: " + (String)pLvl1Pulse + " UpOffset2: " + (String) int(setOffset) + " Sublvl: " + (String)subLevel1);
     }
     datapick["platform"] = "LEVEL 2";
     datapick["sublevel"] = platformSubLevel;
